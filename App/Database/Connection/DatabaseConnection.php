@@ -10,33 +10,55 @@ use PDOException;
 class DatabaseConnection
 {
     private static ?PDO $pdo = null;
+    private function __construct()
+    {
+    }
+    private function __clone()
+    {
+    }
 
+    /**
+     * @param PDO|null $testingPDO
+     * @return PDO
+     * @throws PDOException
+     */
     public static function connect(?PDO $testingPDO = null): PDO
     {
         if (self::$pdo === null) {
             try {
 
-               if($testingPDO !== null) {
-                   self::$pdo = $testingPDO;
-                   return self::$pdo;
-               }
+                if($testingPDO !== null) {
+                    self::$pdo = $testingPDO;
+                    return self::$pdo;
+                }
 
-                $host = $_ENV['DB_HOST'];
-                $db = $_ENV['DB_NAME'];
-                $user = $_ENV['DB_USERNAME'];
-                $password = $_ENV['DB_PASSWORD'];
-                $port = $_ENV['DB_PORT'];
-
-                self::$pdo = new PDO("mysql:host=$host;dbname=$db;port=$port", $user, $password);
-                self::$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-                self::$pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_OBJ);
+                self::$pdo = self::createConnection();
 
                 return self::$pdo;
             } catch (PDOException $e) {
-                echo 'Connection failed: ' . $e->getMessage();
+                throw new PDOException($e->getMessage(), (int)$e->getCode());
             }
         }
 
         return self::$pdo;
+    }
+
+    private static function createConnection(): PDO
+    {
+        $host = $_ENV['DB_HOST'];
+        $db = $_ENV['DB_NAME'];
+        $user = $_ENV['DB_USERNAME'];
+        $password = $_ENV['DB_PASSWORD'];
+        $port = $_ENV['DB_PORT'];
+
+        return new PDO("mysql:host=$host;dbname=$db;port=$port", $user, $password, [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_OBJ
+        ]);
+    }
+
+    public static function disconnect(): void
+    {
+        self::$pdo = null;
     }
 }
