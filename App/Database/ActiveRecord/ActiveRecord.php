@@ -5,17 +5,17 @@ declare(strict_types=1);
 namespace App\Database\ActiveRecord;
 
 use App\Contracts\Database\ActiveRecord\ActiveRecordContract;
-use App\Contracts\Database\ActiveRecord\UpdateContract;
+use App\Contracts\Database\ActiveRecord\ActiveRecordExecuteContract;
 use ReflectionClass;
 
 abstract class ActiveRecord implements ActiveRecordContract
 {
     /** @var array<string|mixed> */
     protected array $attributes = [];
+    protected string $table = '';
     public function __construct(
-        protected ?string $table = null
     ) {
-        if(!$this->table) {
+        if(empty($this->table)) {
             $tableName = (new ReflectionClass($this))->getShortName(); // Get the class name
             $tableName = lcfirst($tableName); // Convert the first letter to lowercase
             $tableName = (string)preg_replace('/([a-z])([A-Z])/', '$1_$2', $tableName); // Convert camelCase to snake_case
@@ -47,11 +47,11 @@ abstract class ActiveRecord implements ActiveRecordContract
     }
     public function __isset(string $name): bool
     {
-        return isset($this->$name);
+        return isset($this->attributes[$name]);
     }
 
-    public function update(UpdateContract $updateInterface)
+    public function execute(ActiveRecordExecuteContract $activeRecordExecuteInterface): mixed
     {
-        return $updateInterface->update($this);
+        return $activeRecordExecuteInterface->execute($this);
     }
 }

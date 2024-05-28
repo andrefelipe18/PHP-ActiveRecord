@@ -47,8 +47,8 @@ class DatabaseConnection
     {
         $host = $_ENV['DB_HOST'];
         $db = $_ENV['DB_NAME'];
-        $user = $_ENV['DB_USERNAME'];
-        $password = $_ENV['DB_PASSWORD'];
+        $user = $_ENV['DB_USER'];
+        $password = $_ENV['DB_PASS'];
         $port = $_ENV['DB_PORT'];
 
         return new PDO("mysql:host=$host;dbname=$db;port=$port", $user, $password, [
